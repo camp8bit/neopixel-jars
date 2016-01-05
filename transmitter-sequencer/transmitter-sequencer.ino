@@ -7,7 +7,7 @@
 #include <RH_ASK.h>
 #include <SPI.h> // Not actually used but needed to compile
 
-RH_ASK driver(500);
+RH_ASK driver(500, 6, 7);
 
 void setup()
 {
@@ -21,11 +21,11 @@ byte b;
 void loop()                                                                                                                                                                                              
 {
     const char *msg = "hello";
-    b = millis() / 5000;
+    b = millis() / 2000;
     
     // driver.send((uint8_t *)msg, strlen(msg));
     driver.send((uint8_t *)&b, 1);
     driver.waitPacketSent();
-    delay(100);
-    Serial.println(b, HEX);
+    delay(10);
+    //Serial.println(b, HEX);
 }

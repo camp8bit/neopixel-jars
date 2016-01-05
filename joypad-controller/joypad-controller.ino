@@ -64,7 +64,7 @@ void loop() {
   
   // matrix.setIntensity(vader % 16); // (byte) sin((float) vader / 16.0) * 6 + 9);
 
-  if (vader % 50 == 0){
+  if (false) { // (vader % 50 == 0){
     matrix.fillScreen(HIGH);
     //matrix.drawChar(x, y, 2, LOW, HIGH, 1); // smiley face
     matrix.drawChar(x, y, mode + 'A', LOW, HIGH, 1);

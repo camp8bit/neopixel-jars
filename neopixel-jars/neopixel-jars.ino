@@ -25,16 +25,9 @@ CRGB leds[NUM_LEDS];
 
 void setup() {
   delay(250); // sanity delay
-    if (!driver.init())
-         Serial.println("init failed");
+  driver.init();
   FastLED.addLeds<CHIPSET, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS); // .setCorrection( TypicalLEDStrip );
   FastLED.setBrightness( BRIGHTNESS );
-  Serial.begin(9600);
-  Serial.println("Started...");
-
-  // supply power to the transmitter
-  pinMode(10, OUTPUT);
-  digitalWrite(10, HIGH); 
 }
 
 void shutdown(){
@@ -80,52 +73,27 @@ void fire(int frame){
   }
 }
 
-byte flashModulus = 8;
-void flash(int frame){
+void flash(int frame, byte hue = 64){
+  byte flashModulus = 8;
   FastLED.setBrightness(255);
   if (frame % flashModulus == 0){
-    fill_solid(leds, NUM_LEDS, CRGB(0,255,0));
+    fill_solid(leds, NUM_LEDS, CHSV(hue, 255, 128));
   } else {
     fill_solid(leds, NUM_LEDS, CRGB(0,0,0));
   }
 }
 
-/* Move a dot along the strip */
-byte swipeHue = 64;
-void swipeSetup(){
-  swipeHue = random(255);
-}
-void swipe(int frame){
+void swipe(int frame, byte hue = 64){
   fill_solid(leds, NUM_LEDS, CRGB(0,0,0));
-  leds[frame % NUM_LEDS] = CRGB(0,255,0); // CHSV(swipeHue, 255, 128);  
-  leds[(frame+1) % NUM_LEDS] = CRGB(0,255,0);CHSV(swipeHue, 128, 64);  
+  leds[frame % NUM_LEDS] = CHSV(hue, 255, 128);  
+  leds[(frame+1) % NUM_LEDS] = CHSV(hue, 255, 128);  
 }
 
-void sweep(int frame){
+void sweep(int frame, byte hue = 64){
   fill_solid(leds, NUM_LEDS, CRGB(0,0,0));
 
   for(int i=0;i < frame % NUM_LEDS; i++){
-    leds[i] =  CRGB(0,255,0);
-  }
-//  leds[frame % NUM_LEDS] = CHSV(swipeHue, 255, 128);  
-//  leds[(frame+1) % NUM_LEDS] = CHSV(swipeHue, 128, 64);  
-}
-
-/* Fill and clear the strip*/
-byte fillHue = 90;
-void fillSetup(){
-  fillHue = random(255);
-}
-void fill(int frame){
-  fill_solid(leds, NUM_LEDS, CRGB(0,0,0));
-
-  byte b = frame % (NUM_LEDS * 2);
-
-  if (b <= NUM_LEDS) {
-    fill_solid(leds, frame % NUM_LEDS, CHSV(fillHue, 255, 128));
-  } else {
-    b = frame % NUM_LEDS; 
-    fill_solid(leds + b, NUM_LEDS - b, CHSV(fillHue, 255, 128));
+    leds[i] =  CHSV(hue, 255, 128);
   }
 }
 
@@ -133,10 +101,8 @@ void fill(int frame){
 void sparkles(int frame){
   FastLED.setBrightness(255);
   fill_solid(leds, NUM_LEDS, CRGB(0,0,0));
-  //if(random(2) == 0){
   byte spark = random(NUM_LEDS);
   leds[spark] = CRGB(255,255,255);
-  //}
 }
 
 /* Flash a gradient */
@@ -182,25 +148,19 @@ void render()
 
   currentPattern = stateMessage;
   
-  switch (currentPattern % 6) {
-    case 0:
-      fire(frame);
-      break;
-    case 1:
-      gradient(frame);
-      break;
-    case 2:
-      sparkles(frame);
-      break;
-    case 3:
-      flash(frame);
-      break;
-    case 4:
-      sweep(frame);
-      break;
-    case 5:
-      swipe(frame);
-      break;
+  switch (currentPattern % 12) {
+    case  0: fire(frame); break;
+    case  1: gradient(frame); break;
+    case  2: sparkles(frame); break;
+    case  3: flash(frame, 0); break;
+    case  4: sweep(frame, 0); break;
+    case  5: swipe(frame, 0); break;
+    case  6: flash(frame, 64); break;
+    case  7: sweep(frame, 64); break;
+    case  8: swipe(frame, 64); break;
+    case  9: flash(frame, 224); break;
+    case  10: sweep(frame, 224); break;
+    case  11: swipe(frame, 224); break;
   }
 
   // gradient(frame);
@@ -229,9 +189,9 @@ void loop()
     // Message with a good checksum received, dump it.
     // driver.printBuffer("Got:", buf, buflen);
 
-    Serial.print("Message: ");
+    //Serial.print("Message: ");
     // Serial.println((char*)buf);
-    Serial.println(buf[0], HEX);
+    //Serial.println(buf[0], HEX);
     if (stateMessage != buf[0]){
       stateMessage = buf[0];
       frame = 0;
